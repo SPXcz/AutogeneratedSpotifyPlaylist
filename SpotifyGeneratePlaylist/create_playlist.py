@@ -38,10 +38,11 @@ class CreatePlaylist:
         # playlist id
         return response_json["id"]
 
-    def get_spotify_uri(self, song_name):
+    def get_spotify_uri(self, song_name, artist):
         """Search For the Song"""
-        query = "https://api.spotify.com/v1/search?q={}&type=track&limit=20&offset=0".format(
-            song_name
+        query = "https://api.spotify.com/v1/search?query=track%3A{}+artist%3A{}&type=track&offset=0&limit=20".format(
+            song_name,
+            artist
         )
         response = requests.get(
             query,

@@ -9,6 +9,7 @@ import sys
 class YtToSpotify(CreatePlaylist):
     def __init__(self):
         super().__init__()
+        self.names = []
 
     #Gets names of songs through YT web scraping which will be added to your playlist
     def getNames(self, no_songs, url, playlist_id):
@@ -32,12 +33,13 @@ class YtToSpotify(CreatePlaylist):
         song_name_scrap = self.browser.find_element_by_xpath('//*[@id="container"]/h1/yt-formatted-string')
         song = song_name_scrap.text
         song_parts = song.split(" - ")
-        artist = song_parts[0]
-        song_parts = re.split('\(|\[', song_parts[1])
-        name = song_parts[0]
-
-        #Adds song of this page
-        self.addSong(youtube_url, name, artist)
+        if(len(song_parts) < 1):
+            artist = song_parts[0]
+            song_parts = re.split('\(|\[', song_parts[1])
+            name = song_parts[0]
+            self.names.append(name)
+            #Adds song of this page
+            self.addSong(youtube_url, name, artist)
 
         next_song_scrap = self.browser.find_elements_by_xpath("//*[@id=\"dismissable\"]/div/div[.]/a")
         #Finding next song to be added
@@ -50,8 +52,9 @@ class YtToSpotify(CreatePlaylist):
             song_parts = re.split('\(|\[',song_parts[1])
             name = song_parts[0]
             #Checking for existance of a song and whether it's been already added
-            if((self.get_spotify_uri(name) is not None) and (self.all_song_info.get(name, None) is None)):
+            if((self.get_spotify_uri(name, artist) is not None) and not (self.names.__contains__(name))):
                 sleep(1)
+                self.names.append(name)
                 curr_url = next_song_scrap[0].get_attribute('href')
                 self.addSong(curr_url, name, artist)
         
@@ -67,7 +70,7 @@ class YtToSpotify(CreatePlaylist):
                     "artist": artist,
 
                     # add the uri, easy to get song to put into playlist, searches based on the input (string)
-                    "spotify_uri": self.get_spotify_uri(name+" "+artist)
+                    "spotify_uri": self.get_spotify_uri(name, artist)
 
                 }
                 print("Song name: ", name, " by:", artist, " has been added")
