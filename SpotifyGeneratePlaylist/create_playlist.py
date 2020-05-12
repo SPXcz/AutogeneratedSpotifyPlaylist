@@ -69,6 +69,59 @@ class CreatePlaylist:
 
         return uri
 
+    #Gets an ID of a playlist based on input
+    def getPlaylistId(self, playlist_name):
+        query = "https://api.spotify.com/v1/me/playlists"
+
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(spotify_token)
+            }
+        )
+
+         # check for valid response status
+        if response.status_code != 200:
+            raise ResponseException(response.status_code)
+
+        response_json = response.json()
+
+        for resp in response_json["items"]:
+
+            set1 = set(resp["name"].split(' '))
+            set2 = set(playlist_name.split(' '))
+
+            if(set1 == set2):
+                #returns id of playlist we're looking for
+                return resp["id"]
+        
+        #No playlist with such name has been found
+        return None
+
+    #gets an array of songs already in a playlist
+    def getSongsInPlaylist(self, playlist_id):
+        tmp = []
+        query = "https://api.spotify.com/v1/playlists/{}/tracks".format(playlist_id)
+
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(spotify_token)
+            }
+        )
+
+        if response.status_code != 200:
+            raise ResponseException(response.status_code)
+
+        response_json = response.json()
+
+        for i in range(0, len(response_json["items"])-1):
+            tmp.append(response_json["items"][i]["track"]["name"])
+
+        return tmp
+
     def add_song_to_playlist(self, playlist_id):
         """Add all songs into a new Spotify playlist"""
 
@@ -93,7 +146,9 @@ class CreatePlaylist:
 
         # check for valid response status
         if response.status_code != 201:
-            raise ResponseException(response.status_code)
+            print("A problem has occured, trying again")
+            return True
+            #raise ResponseException(response.status_code)
 
-        response_json = response.json()
-        return response_json
+        #response_json = response.json()
+        return False

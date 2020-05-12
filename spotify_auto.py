@@ -3,7 +3,6 @@ import youtube_dl
 import re
 from time import sleep
 from SpotifyGeneratePlaylist.create_playlist import CreatePlaylist
-import sys
 
 #Extension of TheComeUpCode's CreatePlaylist class
 class YtToSpotify(CreatePlaylist):
@@ -16,8 +15,10 @@ class YtToSpotify(CreatePlaylist):
         self.browserConnect()
         for i in range(0, no_songs):
             url = self.getNameFromYT(url)
-            sleep(20)
-            self.add_song_to_playlist(playlist_id)
+            while True:
+                sleep(20)
+                if not self.add_song_to_playlist(playlist_id):
+                    break
             print("New songs added")
             self.all_song_info = {}
             if(url == None):
@@ -37,7 +38,6 @@ class YtToSpotify(CreatePlaylist):
             artist = song_parts[0]
             song_parts = re.split('\(|\[', song_parts[1])
             name = song_parts[0]
-            self.names.append(name)
             #Adds song of this page
             self.addSong(youtube_url, name, artist)
 
@@ -54,13 +54,13 @@ class YtToSpotify(CreatePlaylist):
             #Checking for existance of a song and whether it's been already added
             if((self.get_spotify_uri(name, artist) is not None) and not (self.names.__contains__(name))):
                 sleep(1)
-                self.names.append(name)
                 curr_url = next_song_scrap[0].get_attribute('href')
                 self.addSong(curr_url, name, artist)
         
         return curr_url
 
     def addSong(self, youtube_url, name, artist):
+        self.names.append(name)
         #Putting information about the song into an array
         if name is not None and artist is not None:
                 # save all important info and skip any missing song and artist
@@ -84,25 +84,3 @@ class YtToSpotify(CreatePlaylist):
     #Close browser
     def browserClose(self):
         self.browser.close()
-
-
-def main():
-    #Program has 3 arguments: URL of the first song, name of your new playlist, number of YT pages to be examined (1 page is ~ 14 songs)
-    if(len(sys.argv) <= 1):
-        url = input("URL of seed song: ")
-        playlist_name = input("Name of your new playlist: ")
-        no_songs = int(input("Number of songs you want to add: "))
-    else:
-        url = sys.argv[1]
-        playlist_name = sys.argv[2]
-        no_songs = int(sys.argv[3])
-
-    obj = YtToSpotify()
-    # create a new playlist
-    playlist_id = obj.create_playlist(playlist_name)
-    print("Playlist has been created")
-    #Get list of songs
-    obj.getNames(no_songs, url, playlist_id)
-    print("Playlist has been filled")
-
-main()
