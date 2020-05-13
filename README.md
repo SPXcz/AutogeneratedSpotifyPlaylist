@@ -37,7 +37,7 @@ To create new playlist use <b>createPlaylist.py</b>. For the program to function
 
 <h3>Adding songs to already exisitng playlist</h3>
 
-To add new songs to already existing playlist, use <b>createPlaylist.py</b>. For the program to function you need to add 3 arguments:   
+To add new songs to already existing playlist, use <b>addToPlaylist.py</b>. For the program to function you need to add 3 arguments:   
 
 `py addToPlaylist.py [Youtube URL of a song] [name of your Spotify playlist] [number of YT pages]`
 
