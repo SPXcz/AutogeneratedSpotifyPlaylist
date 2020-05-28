@@ -9,6 +9,7 @@ class YtToSpotify(CreatePlaylist):
     def __init__(self):
         super().__init__()
         self.names = []
+        self.past_unused_urls = []
 
     #Gets names of songs through YT web scraping which will be added to your playlist
     def getNames(self, no_songs, url, playlist_id):
@@ -22,13 +23,14 @@ class YtToSpotify(CreatePlaylist):
             print("New songs added")
             self.all_song_info = {}
             if(url == None):
-                print("Error while finding new song")
-                return
+                url = self.past_unused_urls[0]
+                self.past_unused_urls.remove(url)
 
         self.browserClose()
 
     def getNameFromYT(self, youtube_url):
         #Finding and parsing YT URL so we can get name of the song and atrist's name
+        curr_url = None
         self.browser.get(youtube_url)
         sleep(5)
         song_name_scrap = self.browser.find_element_by_xpath('//*[@id="container"]/h1/yt-formatted-string')
@@ -55,8 +57,10 @@ class YtToSpotify(CreatePlaylist):
             if((self.get_spotify_uri(name, artist) is not None) and not (self.names.__contains__(name))):
                 sleep(1)
                 curr_url = next_song_scrap[0].get_attribute('href')
+                self.past_unused_urls.append(curr_url)
                 self.addSong(curr_url, name, artist)
         
+        self.past_unused_urls.remove(curr_url)
         return curr_url
 
     def addSong(self, youtube_url, name, artist):
